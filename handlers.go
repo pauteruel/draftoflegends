@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-
+	log "gopkg.in/inconshreveable/log15.v2"
 	"github.com/gorilla/mux"
 )
 
@@ -15,9 +15,23 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Welcome!\n")
 }
 
+
+type User struct{
+	Id string `db:"id"`
+	Username string  `db:"username"`
+}
+
 func TodoIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+
+	user := User{}
+	err := dataBase.QueryStruct("SELECT * FROM users WHERE USERNAME LIKE 'pepe'", &user)
+
+	if (err == nil){
+		log.Debug("Debugging", user)
+	}
+
 	if err := json.NewEncoder(w).Encode(todos); err != nil {
 		panic(err)
 	}
@@ -77,3 +91,21 @@ func TodoCreate(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 }
+
+//func TodoUpdate(w http.ResponseWriter, r *http.Request) {
+//	vars := mux.Vars(r)
+//	var todoId int
+//	var err error
+//	if todoId, err = strconv.Atoi(vars["todoId"]); err != nil {
+//		panic(err)
+//	}
+//	todo := RepoFindTodo(todoId)
+//	if todo.Id > 0 {
+//		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+//		w.WriteHeader(http.StatusOK)
+//		if err := json.NewEncoder(w).Encode(todo); err != nil {
+//			panic(err)
+//		}
+//		return
+//	}
+//}
